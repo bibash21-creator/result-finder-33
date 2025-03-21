@@ -5,6 +5,7 @@ import GlassCard from "@/components/ui/glass-card";
 
 interface ResultCardProps {
   subject: Subject;
+  resultImage?: string | null;
 }
 
 const getGradeColor = (grade: string) => {
@@ -24,9 +25,19 @@ const getGradeColor = (grade: string) => {
   }
 };
 
-const ResultCard = ({ subject }: ResultCardProps) => {
+const ResultCard = ({ subject, resultImage }: ResultCardProps) => {
   return (
     <GlassCard className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+      {resultImage && (
+        <div className="mb-4">
+          <img 
+            src={resultImage} 
+            alt="Result Image" 
+            className="w-full h-auto rounded-md"
+          />
+        </div>
+      )}
+      
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-lg">{subject.name}</h3>

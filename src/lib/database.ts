@@ -1,3 +1,4 @@
+
 import { Student, Subject } from "./data";
 
 // Database key for storing all students
@@ -85,6 +86,7 @@ export const addNewStudent = (newStudent: {
     password: newStudent.password,
     semester: "Fall 2023",
     subjects: studentSubjects,
+    resultImage: null, // Initialize with no image
   };
   
   // Add to students array
@@ -235,4 +237,37 @@ export const updateStudentSubject = (
 export const getStudentSubjects = (studentId: string): Subject[] | null => {
   const student = getStudentById(studentId);
   return student ? student.subjects : null;
+};
+
+// NEW FUNCTION: Upload result image
+export const uploadResultImage = (
+  studentId: string,
+  imageBase64: string
+): boolean => {
+  const students = getAllStudents();
+  const studentIndex = students.findIndex((s) => s.id === studentId);
+  
+  if (studentIndex === -1) return false;
+  
+  // Update the result image
+  students[studentIndex].resultImage = imageBase64;
+  
+  // Update localStorage
+  localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  return true;
+};
+
+// NEW FUNCTION: Remove result image
+export const removeResultImage = (studentId: string): boolean => {
+  const students = getAllStudents();
+  const studentIndex = students.findIndex((s) => s.id === studentId);
+  
+  if (studentIndex === -1) return false;
+  
+  // Remove the result image
+  students[studentIndex].resultImage = null;
+  
+  // Update localStorage
+  localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  return true;
 };

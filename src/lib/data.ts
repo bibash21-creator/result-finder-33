@@ -1,4 +1,3 @@
-
 export interface Subject {
   id: string;
   name: string;
@@ -14,14 +13,13 @@ export interface Student {
   password: string;
   semester: string;
   subjects: Subject[];
+  resultImage?: string | null;
 }
 
-// Generate a random score between 60-100
 export const generateRandomScore = (): number => {
-  return Math.floor(Math.random() * 41) + 60; // Scores between 60-100
+  return Math.floor(Math.random() * 41) + 60;
 };
 
-// Calculate grade based on score
 export const calculateGrade = (score: number): string => {
   if (score >= 90) return "A";
   if (score >= 80) return "B";
@@ -30,7 +28,6 @@ export const calculateGrade = (score: number): string => {
   return "F";
 };
 
-// Subject definitions
 export const subjects = [
   { name: "Mathematics", code: "MATH101" },
   { name: "English", code: "ENG101" },
@@ -41,7 +38,6 @@ export const subjects = [
   { name: "History", code: "HIST101" },
 ];
 
-// Student names
 export const names = [
   "Emma Thompson", "Liam Johnson", "Olivia Davis", "Noah Wilson", "Ava Martinez",
   "William Anderson", "Sophia Taylor", "James Thomas", "Isabella Brown", "Oliver White",
@@ -52,18 +48,16 @@ export const names = [
   "Scarlett Flores", "Gabriel Morris", "Victoria Reed"
 ];
 
-// Create students with random results
 export const students: Student[] = names.map((name, index) => {
   const studentId = `STU${(10000 + index).toString()}`;
   
-  // Generate random subjects for each student
   const studentSubjects: Subject[] = subjects.map((subject, subIndex) => {
     const score = generateRandomScore();
     return {
       id: `SUB${subIndex}`,
       name: subject.name,
       code: subject.code,
-      credits: Math.floor(Math.random() * 2) + 2, // 2-3 credits
+      credits: Math.floor(Math.random() * 2) + 2,
       score,
       grade: calculateGrade(score)
     };
@@ -72,13 +66,13 @@ export const students: Student[] = names.map((name, index) => {
   return {
     id: studentId,
     name,
-    password: "password", // Default password for demo
+    password: "password",
     semester: "Fall 2023",
-    subjects: studentSubjects
+    subjects: studentSubjects,
+    resultImage: null
   };
 });
 
-// Fix these functions to properly handle the Promise response
 export const getStudentByCredentials = async (studentId: string, password: string): Promise<Student | undefined> => {
   const db = await import('./database');
   return db.getStudentByCredentials(studentId, password);

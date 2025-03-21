@@ -45,7 +45,8 @@ import {
   updateStudentSubject
 } from "@/lib/database";
 import { Student, Subject } from "@/lib/data";
-import { PenSquare } from "lucide-react";
+import { PenSquare, Image } from "lucide-react";
+import ImageUploader from "@/components/admin/ImageUploader";
 
 const Admin = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -434,6 +435,34 @@ const Admin = () => {
                                   ))}
                                 </TableBody>
                               </Table>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                            >
+                              <Image className="h-4 w-4 mr-1" />
+                              Result Image
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Manage Result Image</DialogTitle>
+                              <DialogDescription>
+                                Upload or update the result image for {student.name}
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="py-4">
+                              <ImageUploader 
+                                studentId={student.id}
+                                currentImage={student.resultImage}
+                                onImageUpdate={loadData}
+                              />
                             </div>
                           </DialogContent>
                         </Dialog>
