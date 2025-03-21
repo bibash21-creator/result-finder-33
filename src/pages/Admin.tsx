@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
@@ -41,9 +40,11 @@ import {
   setResultsPublished, 
   areResultsPublished,
   updateStudentCredentials,
-  deleteStudent
+  deleteStudent,
+  updateStudentSubject
 } from "@/lib/database";
-import { Student } from "@/lib/data";
+import { Student, Subject } from "@/lib/data";
+import { PenSquare } from "lucide-react";
 
 const Admin = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -53,15 +54,20 @@ const Admin = () => {
   const [adminPassword, setAdminPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // Form states for editing student
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [editName, setEditName] = useState("");
   const [editId, setEditId] = useState("");
   const [editPassword, setEditPassword] = useState("");
   
-  const ADMIN_PASSWORD = "admin123"; // In a real app, this would be stored securely
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null);
+  const [editSubjectName, setEditSubjectName] = useState("");
+  const [editSubjectCode, setEditSubjectCode] = useState("");
+  const [editSubjectCredits, setEditSubjectCredits] = useState<number>(0);
+  const [editSubjectScore, setEditSubjectScore] = useState<number>(0);
   
-  // Load data and refresh after edits
+  const ADMIN_PASSWORD = "admin123";
+  
   const loadData = () => {
     const allStudents = getStudentsForAdmin();
     setStudents(allStudents);
@@ -86,7 +92,6 @@ const Admin = () => {
   };
   
   const handleTogglePublish = () => {
-    // Toggle published state
     const newState = !resultsPublished;
     setResultsPublished(newState);
     setResultsPublishedState(newState);
@@ -98,7 +103,6 @@ const Admin = () => {
     }
   };
   
-  // Handle opening edit dialog
   const handleEditStudent = (student: Student) => {
     setEditingStudent(student);
     setEditName(student.name);
@@ -106,7 +110,6 @@ const Admin = () => {
     setEditPassword(student.password);
   };
   
-  // Handle saving edited student
   const handleSaveEdit = () => {
     if (!editingStudent) return;
     
@@ -119,25 +122,56 @@ const Admin = () => {
     if (success) {
       toast.success("Student information updated successfully");
       setEditingStudent(null);
-      loadData(); // Refresh the list
+      loadData();
     } else {
       toast.error("Failed to update student. ID may already exist.");
     }
   };
   
-  // Handle deleting a student
   const handleDeleteStudent = (studentId: string) => {
     const success = deleteStudent(studentId);
     
     if (success) {
       toast.success("Student deleted successfully");
-      loadData(); // Refresh the list
+      loadData();
     } else {
       toast.error("Failed to delete student");
     }
   };
   
-  // Filter students based on search term
+  const handleEditSubject = (student: Student, subject: Subject) => {
+    setSelectedStudent(student);
+    setSubjectToEdit(subject);
+    setEditSubjectName(subject.name);
+    setEditSubjectCode(subject.code);
+    setEditSubjectCredits(subject.credits);
+    setEditSubjectScore(subject.score);
+  };
+  
+  const handleSaveSubject = () => {
+    if (!selectedStudent || !subjectToEdit) return;
+    
+    const success = updateStudentSubject(
+      selectedStudent.id,
+      subjectToEdit.id,
+      {
+        name: editSubjectName !== subjectToEdit.name ? editSubjectName : undefined,
+        code: editSubjectCode !== subjectToEdit.code ? editSubjectCode : undefined,
+        credits: editSubjectCredits !== subjectToEdit.credits ? editSubjectCredits : undefined,
+        score: editSubjectScore !== subjectToEdit.score ? editSubjectScore : undefined,
+      }
+    );
+    
+    if (success) {
+      toast.success(`Subject ${editSubjectName} updated successfully`);
+      setSelectedStudent(null);
+      setSubjectToEdit(null);
+      loadData();
+    } else {
+      toast.error("Failed to update subject information");
+    }
+  };
+  
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     student.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -244,10 +278,8 @@ const Admin = () => {
             </TableHeader>
             <TableBody>
               {filteredStudents.map((student) => {
-                // Calculate average score
                 const avgScore = student.subjects.reduce((sum, subj) => sum + subj.score, 0) / student.subjects.length;
                 
-                // Calculate GPA
                 const gradePoints: Record<string, number> = {
                   "A": 4.0, "B": 3.0, "C": 2.0, "D": 1.0, "F": 0.0,
                 };
@@ -276,7 +308,6 @@ const Admin = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleEditStudent(student)}
                             >
                               Edit
                             </Button>
@@ -349,25 +380,6 @@ const Admin = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              
-              {filteredStudents.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
-                    No students found matching "{searchTerm}"
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </GlassCard>
-      </main>
-    </div>
-  );
-};
+                        
 
-export default Admin;
+

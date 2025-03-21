@@ -178,3 +178,61 @@ export const deleteStudent = (studentId: string): boolean => {
   localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(newStudents));
   return true;
 };
+
+// NEW FUNCTION: Update student subject details
+export const updateStudentSubject = (
+  studentId: string,
+  subjectId: string,
+  updatedSubject: {
+    name?: string;
+    code?: string;
+    credits?: number;
+    score?: number;
+  }
+): boolean => {
+  const students = getAllStudents();
+  const studentIndex = students.findIndex((s) => s.id === studentId);
+  
+  if (studentIndex === -1) return false;
+  
+  const subjectIndex = students[studentIndex].subjects.findIndex(
+    (s) => s.id === subjectId
+  );
+  
+  if (subjectIndex === -1) return false;
+  
+  // Update the subject properties
+  if (updatedSubject.name) {
+    students[studentIndex].subjects[subjectIndex].name = updatedSubject.name;
+  }
+  
+  if (updatedSubject.code) {
+    students[studentIndex].subjects[subjectIndex].code = updatedSubject.code;
+  }
+  
+  if (updatedSubject.credits) {
+    students[studentIndex].subjects[subjectIndex].credits = updatedSubject.credits;
+  }
+  
+  if (updatedSubject.score !== undefined) {
+    students[studentIndex].subjects[subjectIndex].score = updatedSubject.score;
+    
+    // Update the grade based on the new score
+    import("./data").then(({ calculateGrade }) => {
+      students[studentIndex].subjects[subjectIndex].grade = calculateGrade(updatedSubject.score as number);
+      
+      // Re-save to localStorage
+      localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+    });
+  }
+  
+  // Update localStorage
+  localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  return true;
+};
+
+// NEW FUNCTION: Get student subjects
+export const getStudentSubjects = (studentId: string): Subject[] | null => {
+  const student = getStudentById(studentId);
+  return student ? student.subjects : null;
+};
