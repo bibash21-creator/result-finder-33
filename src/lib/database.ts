@@ -48,7 +48,7 @@ export const getStudentById = (studentId: string): Student | undefined => {
   return students.find((student) => student.id === studentId);
 };
 
-// Add new student
+// Add new student - fixed to return Student directly instead of Promise<Student>
 export const addNewStudent = (newStudent: {
   id: string;
   name: string;
@@ -61,37 +61,40 @@ export const addNewStudent = (newStudent: {
     throw new Error("Student ID already exists");
   }
   
-  // Import subjects and helper functions from data.ts
-  return import("./data").then(({ subjects, generateRandomScore, calculateGrade }) => {
-    // Create new student with random subjects
-    const studentSubjects: Subject[] = subjects.map((subject: any, subIndex: number) => {
+  // Create student subjects immediately instead of using import
+  const studentSubjects: Subject[] = [];
+  
+  import("./data").then(({ subjects, generateRandomScore, calculateGrade }) => {
+    // Create subject data
+    subjects.forEach((subject: any, subIndex: number) => {
       const score = generateRandomScore();
-      return {
+      studentSubjects.push({
         id: `SUB${subIndex}`,
         name: subject.name,
         code: subject.code,
         credits: Math.floor(Math.random() * 2) + 2, // 2-3 credits
         score,
         grade: calculateGrade(score),
-      };
+      });
     });
-    
-    const student: Student = {
-      id: newStudent.id,
-      name: newStudent.name,
-      password: newStudent.password,
-      semester: "Fall 2023",
-      subjects: studentSubjects,
-    };
-    
-    // Add to students array
-    students.push(student);
-    
-    // Update localStorage
-    localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
-    
-    return student;
   });
+  
+  // Create the new student object
+  const student: Student = {
+    id: newStudent.id,
+    name: newStudent.name,
+    password: newStudent.password,
+    semester: "Fall 2023",
+    subjects: studentSubjects,
+  };
+  
+  // Add to students array
+  students.push(student);
+  
+  // Update localStorage
+  localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  
+  return student;
 };
 
 // Update student results

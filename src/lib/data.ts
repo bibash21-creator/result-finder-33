@@ -78,15 +78,18 @@ export const students: Student[] = names.map((name, index) => {
   };
 });
 
-// These functions now use the database.ts module instead
-export const getStudentByCredentials = (studentId: string, password: string): Student | undefined => {
-  return import('./database').then(db => db.getStudentByCredentials(studentId, password));
+// Fix these functions to properly handle the Promise response
+export const getStudentByCredentials = async (studentId: string, password: string): Promise<Student | undefined> => {
+  const db = await import('./database');
+  return db.getStudentByCredentials(studentId, password);
 };
 
-export const addNewStudent = (newStudent: { id: string; name: string; password: string }): Promise<Student> => {
-  return import('./database').then(db => db.addNewStudent(newStudent));
+export const addNewStudent = async (newStudent: { id: string; name: string; password: string }): Promise<Student> => {
+  const db = await import('./database');
+  return db.addNewStudent(newStudent);
 };
 
-export const getStudentById = (studentId: string): Promise<Student | undefined> => {
-  return import('./database').then(db => db.getStudentById(studentId));
+export const getStudentById = async (studentId: string): Promise<Student | undefined> => {
+  const db = await import('./database');
+  return db.getStudentById(studentId);
 };
