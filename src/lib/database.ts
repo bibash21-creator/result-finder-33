@@ -1,4 +1,3 @@
-
 import { Student, Subject } from "./data";
 
 // Database key for storing all students
@@ -123,7 +122,59 @@ export const setResultsPublished = (published: boolean): void => {
   localStorage.setItem(DB_RESULTS_PUBLISHED_KEY, JSON.stringify(published));
 };
 
-// Admin functionality - get student results (future implementation)
+// Admin functionality - get student results
 export const getStudentsForAdmin = (): Student[] => {
   return getAllStudents();
+};
+
+// NEW FUNCTION: Update student credentials
+export const updateStudentCredentials = (
+  studentId: string,
+  updatedData: {
+    name?: string;
+    password?: string;
+    id?: string;
+  }
+): boolean => {
+  const students = getAllStudents();
+  const studentIndex = students.findIndex((s) => s.id === studentId);
+  
+  if (studentIndex === -1) return false;
+  
+  // Update the student data
+  if (updatedData.name) {
+    students[studentIndex].name = updatedData.name;
+  }
+  
+  if (updatedData.password) {
+    students[studentIndex].password = updatedData.password;
+  }
+  
+  // If id is changing, ensure the new ID is unique
+  if (updatedData.id && updatedData.id !== studentId) {
+    // Check if the new ID already exists
+    if (students.some(s => s.id === updatedData.id)) {
+      return false; // ID already exists, can't update
+    }
+    students[studentIndex].id = updatedData.id;
+  }
+  
+  // Update localStorage
+  localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  return true;
+};
+
+// NEW FUNCTION: Delete student
+export const deleteStudent = (studentId: string): boolean => {
+  const students = getAllStudents();
+  const newStudents = students.filter(s => s.id !== studentId);
+  
+  // Check if a student was removed
+  if (newStudents.length === students.length) {
+    return false;
+  }
+  
+  // Update localStorage
+  localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(newStudents));
+  return true;
 };

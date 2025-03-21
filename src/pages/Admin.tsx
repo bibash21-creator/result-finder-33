@@ -16,10 +16,32 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { 
   getStudentsForAdmin, 
   setResultsPublished, 
-  areResultsPublished 
+  areResultsPublished,
+  updateStudentCredentials,
+  deleteStudent
 } from "@/lib/database";
 import { Student } from "@/lib/data";
 
@@ -31,14 +53,25 @@ const Admin = () => {
   const [adminPassword, setAdminPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
+  // Form states for editing student
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editId, setEditId] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  
   const ADMIN_PASSWORD = "admin123"; // In a real app, this would be stored securely
+  
+  // Load data and refresh after edits
+  const loadData = () => {
+    const allStudents = getStudentsForAdmin();
+    setStudents(allStudents);
+    setResultsPublishedState(areResultsPublished());
+    setLoading(false);
+  };
   
   useEffect(() => {
     if (isAuthenticated) {
-      // Load students and check if results are published
-      setStudents(getStudentsForAdmin());
-      setResultsPublishedState(areResultsPublished());
-      setLoading(false);
+      loadData();
     }
   }, [isAuthenticated]);
   
@@ -65,12 +98,51 @@ const Admin = () => {
     }
   };
   
+  // Handle opening edit dialog
+  const handleEditStudent = (student: Student) => {
+    setEditingStudent(student);
+    setEditName(student.name);
+    setEditId(student.id);
+    setEditPassword(student.password);
+  };
+  
+  // Handle saving edited student
+  const handleSaveEdit = () => {
+    if (!editingStudent) return;
+    
+    const success = updateStudentCredentials(editingStudent.id, {
+      name: editName !== editingStudent.name ? editName : undefined,
+      id: editId !== editingStudent.id ? editId : undefined,
+      password: editPassword !== editingStudent.password ? editPassword : undefined
+    });
+    
+    if (success) {
+      toast.success("Student information updated successfully");
+      setEditingStudent(null);
+      loadData(); // Refresh the list
+    } else {
+      toast.error("Failed to update student. ID may already exist.");
+    }
+  };
+  
+  // Handle deleting a student
+  const handleDeleteStudent = (studentId: string) => {
+    const success = deleteStudent(studentId);
+    
+    if (success) {
+      toast.success("Student deleted successfully");
+      loadData(); // Refresh the list
+    } else {
+      toast.error("Failed to delete student");
+    }
+  };
+  
   // Filter students based on search term
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     student.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen gradient-background">
@@ -163,9 +235,11 @@ const Admin = () => {
               <TableRow>
                 <TableHead>Student ID</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Password</TableHead>
                 <TableHead>Semester</TableHead>
                 <TableHead>Average Score</TableHead>
                 <TableHead>GPA</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -185,18 +259,105 @@ const Admin = () => {
                 
                 return (
                   <TableRow key={student.id}>
-                    <TableCell>{student.id}</TableCell>
+                    <TableCell className="font-medium">{student.id}</TableCell>
                     <TableCell>{student.name}</TableCell>
+                    <TableCell>
+                      <span className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
+                        {student.password}
+                      </span>
+                    </TableCell>
                     <TableCell>{student.semester}</TableCell>
                     <TableCell>{avgScore.toFixed(1)}%</TableCell>
                     <TableCell>{gpa}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditStudent(student)}
+                            >
+                              Edit
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Edit Student Information</DialogTitle>
+                              <DialogDescription>
+                                Make changes to the student's credentials.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="editName">Student Name</Label>
+                                <Input
+                                  id="editName"
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="editId">Student ID</Label>
+                                <Input
+                                  id="editId"
+                                  value={editId}
+                                  onChange={(e) => setEditId(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="editPassword">Password</Label>
+                                <Input
+                                  id="editPassword"
+                                  value={editPassword}
+                                  onChange={(e) => setEditPassword(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button type="submit" onClick={handleSaveEdit}>
+                                Save Changes
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                            >
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action will permanently delete the student "{student.name}" with ID: {student.id}.
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDeleteStudent(student.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}
               
               {filteredStudents.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">
+                  <TableCell colSpan={7} className="text-center py-4">
                     No students found matching "{searchTerm}"
                   </TableCell>
                 </TableRow>
