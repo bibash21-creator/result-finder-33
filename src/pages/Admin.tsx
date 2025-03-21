@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
@@ -308,6 +309,7 @@ const Admin = () => {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => handleEditStudent(student)}
                             >
                               Edit
                             </Button>
@@ -381,5 +383,130 @@ const Admin = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                         
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                            >
+                              Subjects
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl">
+                            <DialogHeader>
+                              <DialogTitle>Manage Subjects for {student.name}</DialogTitle>
+                              <DialogDescription>
+                                View and edit subject information for this student.
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="py-4">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Subject Name</TableHead>
+                                    <TableHead>Code</TableHead>
+                                    <TableHead>Credits</TableHead>
+                                    <TableHead>Score</TableHead>
+                                    <TableHead>Grade</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {student.subjects.map((subject) => (
+                                    <TableRow key={subject.id}>
+                                      <TableCell>{subject.name}</TableCell>
+                                      <TableCell>{subject.code}</TableCell>
+                                      <TableCell>{subject.credits}</TableCell>
+                                      <TableCell>{subject.score}%</TableCell>
+                                      <TableCell>{subject.grade}</TableCell>
+                                      <TableCell className="text-right">
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => handleEditSubject(student, subject)}
+                                        >
+                                          <PenSquare className="h-4 w-4 mr-1" />
+                                          Edit
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </GlassCard>
+        
+        {/* Subject Editing Dialog */}
+        {subjectToEdit && selectedStudent && (
+          <Dialog open={!!subjectToEdit} onOpenChange={(open) => !open && setSubjectToEdit(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Subject</DialogTitle>
+                <DialogDescription>
+                  Make changes to {subjectToEdit.name} for {selectedStudent.name}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editSubjectName">Subject Name</Label>
+                  <Input
+                    id="editSubjectName"
+                    value={editSubjectName}
+                    onChange={(e) => setEditSubjectName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editSubjectCode">Subject Code</Label>
+                  <Input
+                    id="editSubjectCode"
+                    value={editSubjectCode}
+                    onChange={(e) => setEditSubjectCode(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editSubjectCredits">Credits</Label>
+                  <Input
+                    id="editSubjectCredits"
+                    type="number"
+                    min="1"
+                    max="6"
+                    value={editSubjectCredits}
+                    onChange={(e) => setEditSubjectCredits(Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editSubjectScore">Score (%)</Label>
+                  <Input
+                    id="editSubjectScore"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={editSubjectScore}
+                    onChange={(e) => setEditSubjectScore(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleSaveSubject}>
+                  Save Subject Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </main>
+    </div>
+  );
+};
 
-
+export default Admin;
