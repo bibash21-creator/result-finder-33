@@ -10,11 +10,14 @@ import { Student, Subject } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { areResultsPublished } from "@/lib/database";
+import GlassCard from "@/components/ui/glass-card";
 
 const Dashboard = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [resultsPublished, setResultsPublished] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +27,10 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
+
+    // Check if results are published
+    const published = areResultsPublished();
+    setResultsPublished(published);
 
     // Simulate loading data
     const timer = setTimeout(() => {
@@ -53,6 +60,24 @@ const Dashboard = () => {
           <div className="h-8 w-64 bg-gray-200 rounded-md mx-auto mb-4"></div>
           <div className="h-4 w-48 bg-gray-200 rounded-md mx-auto"></div>
         </div>
+      </div>
+    );
+  }
+
+  if (!resultsPublished) {
+    return (
+      <div className="min-h-screen gradient-background">
+        <Navbar />
+        
+        <main className="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[80vh]">
+          <GlassCard className="text-center max-w-md">
+            <h2 className="text-2xl font-bold mb-4">Results Not Published Yet</h2>
+            <p className="text-muted-foreground mb-6">
+              Your results have not been published yet. Please check back later.
+            </p>
+            <Button onClick={handleLogout}>Logout</Button>
+          </GlassCard>
+        </main>
       </div>
     );
   }

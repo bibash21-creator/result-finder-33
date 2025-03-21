@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import GlassCard from "@/components/ui/glass-card";
-import { addNewStudent } from "@/lib/data";
+import { addNewStudent, areResultsPublished } from "@/lib/database";
 import { ChevronRight } from "lucide-react";
 
 const SignupForm = () => {
@@ -29,9 +29,18 @@ const SignupForm = () => {
           password,
         });
         
+        // Check if results are published
+        const resultsPublished = areResultsPublished();
+        
         // Store student in localStorage for persistence
         localStorage.setItem("currentStudent", JSON.stringify(newStudent));
-        toast.success("Account created successfully!");
+        
+        if (!resultsPublished) {
+          toast.success("Account created successfully! Results will be available when published.");
+        } else {
+          toast.success("Account created successfully!");
+        }
+        
         navigate("/dashboard");
       } catch (error) {
         if (error instanceof Error) {

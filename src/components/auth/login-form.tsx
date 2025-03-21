@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import GlassCard from "@/components/ui/glass-card";
-import { getStudentByCredentials } from "@/lib/data";
+import { getStudentByCredentials } from "@/lib/database";
 import { ChevronRight } from "lucide-react";
+import { areResultsPublished } from "@/lib/database";
 
 const LoginForm = () => {
   const [studentId, setStudentId] = useState("");
@@ -24,6 +25,15 @@ const LoginForm = () => {
       const student = getStudentByCredentials(studentId, password);
       
       if (student) {
+        // Check if results are published
+        const resultsPublished = areResultsPublished();
+        
+        if (!resultsPublished) {
+          toast.error("Results are not published yet. Please check back later.");
+          setIsLoading(false);
+          return;
+        }
+        
         // Store student in localStorage for persistence
         localStorage.setItem("currentStudent", JSON.stringify(student));
         toast.success("Login successful!");
