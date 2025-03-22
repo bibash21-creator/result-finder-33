@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
@@ -42,10 +41,11 @@ import {
   areResultsPublished,
   updateStudentCredentials,
   deleteStudent,
-  updateStudentSubject
+  updateStudentSubject,
+  addSubjectToStudent
 } from "@/lib/database";
 import { Student, Subject } from "@/lib/data";
-import { PenSquare, Image } from "lucide-react";
+import { PenSquare, Image, Plus } from "lucide-react";
 import ImageUploader from "@/components/admin/ImageUploader";
 
 const Admin = () => {
@@ -67,6 +67,12 @@ const Admin = () => {
   const [editSubjectCode, setEditSubjectCode] = useState("");
   const [editSubjectCredits, setEditSubjectCredits] = useState<number>(0);
   const [editSubjectScore, setEditSubjectScore] = useState<number>(0);
+  
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [newSubjectCode, setNewSubjectCode] = useState("");
+  const [newSubjectCredits, setNewSubjectCredits] = useState<number>(3);
+  const [newSubjectScore, setNewSubjectScore] = useState<number>(75);
+  const [addingSubjectTo, setAddingSubjectTo] = useState<Student | null>(null);
   
   const ADMIN_PASSWORD = "admin123";
   
@@ -171,6 +177,41 @@ const Admin = () => {
       loadData();
     } else {
       toast.error("Failed to update subject information");
+    }
+  };
+  
+  const handleAddSubject = (student: Student) => {
+    setAddingSubjectTo(student);
+    setNewSubjectName("");
+    setNewSubjectCode("");
+    setNewSubjectCredits(3);
+    setNewSubjectScore(75);
+  };
+  
+  const handleSaveNewSubject = () => {
+    if (!addingSubjectTo) return;
+    
+    if (!newSubjectName || !newSubjectCode) {
+      toast.error("Subject name and code are required");
+      return;
+    }
+    
+    const success = addSubjectToStudent(
+      addingSubjectTo.id,
+      {
+        name: newSubjectName,
+        code: newSubjectCode,
+        credits: newSubjectCredits,
+        score: newSubjectScore
+      }
+    );
+    
+    if (success) {
+      toast.success(`New subject ${newSubjectName} added successfully`);
+      setAddingSubjectTo(null);
+      loadData();
+    } else {
+      toast.error("Failed to add new subject");
     }
   };
   
@@ -280,7 +321,9 @@ const Admin = () => {
             </TableHeader>
             <TableBody>
               {filteredStudents.map((student) => {
-                const avgScore = student.subjects.reduce((sum, subj) => sum + subj.score, 0) / student.subjects.length;
+                const avgScore = student.subjects.length > 0 
+                  ? student.subjects.reduce((sum, subj) => sum + subj.score, 0) / student.subjects.length
+                  : 0;
                 
                 const gradePoints: Record<string, number> = {
                   "A": 4.0, "B": 3.0, "C": 2.0, "D": 1.0, "F": 0.0,
@@ -402,6 +445,18 @@ const Admin = () => {
                             </DialogHeader>
                             
                             <div className="py-4">
+                              <div className="flex justify-end mb-4">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleAddSubject(student)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Plus className="h-4 w-4" /> 
+                                  Add Subject
+                                </Button>
+                              </div>
+                              
                               <Table>
                                 <TableHeader>
                                   <TableRow>
@@ -414,25 +469,33 @@ const Admin = () => {
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {student.subjects.map((subject) => (
-                                    <TableRow key={subject.id}>
-                                      <TableCell>{subject.name}</TableCell>
-                                      <TableCell>{subject.code}</TableCell>
-                                      <TableCell>{subject.credits}</TableCell>
-                                      <TableCell>{subject.score}%</TableCell>
-                                      <TableCell>{subject.grade}</TableCell>
-                                      <TableCell className="text-right">
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline"
-                                          onClick={() => handleEditSubject(student, subject)}
-                                        >
-                                          <PenSquare className="h-4 w-4 mr-1" />
-                                          Edit
-                                        </Button>
+                                  {student.subjects.length > 0 ? (
+                                    student.subjects.map((subject) => (
+                                      <TableRow key={subject.id}>
+                                        <TableCell>{subject.name}</TableCell>
+                                        <TableCell>{subject.code}</TableCell>
+                                        <TableCell>{subject.credits}</TableCell>
+                                        <TableCell>{subject.score}%</TableCell>
+                                        <TableCell>{subject.grade}</TableCell>
+                                        <TableCell className="text-right">
+                                          <Button 
+                                            size="sm" 
+                                            variant="outline"
+                                            onClick={() => handleEditSubject(student, subject)}
+                                          >
+                                            <PenSquare className="h-4 w-4 mr-1" />
+                                            Edit
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                                        No subjects found. Add a subject to get started.
                                       </TableCell>
                                     </TableRow>
-                                  ))}
+                                  )}
                                 </TableBody>
                               </Table>
                             </div>
@@ -475,7 +538,6 @@ const Admin = () => {
           </Table>
         </GlassCard>
         
-        {/* Subject Editing Dialog */}
         {subjectToEdit && selectedStudent && (
           <Dialog open={!!subjectToEdit} onOpenChange={(open) => !open && setSubjectToEdit(null)}>
             <DialogContent>
@@ -528,6 +590,69 @@ const Admin = () => {
               <DialogFooter>
                 <Button onClick={handleSaveSubject}>
                   Save Subject Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+        
+        {addingSubjectTo && (
+          <Dialog 
+            open={!!addingSubjectTo} 
+            onOpenChange={(open) => !open && setAddingSubjectTo(null)}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Subject</DialogTitle>
+                <DialogDescription>
+                  Add a new subject for {addingSubjectTo.name}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newSubjectName">Subject Name</Label>
+                  <Input
+                    id="newSubjectName"
+                    value={newSubjectName}
+                    onChange={(e) => setNewSubjectName(e.target.value)}
+                    placeholder="e.g. Mathematics"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newSubjectCode">Subject Code</Label>
+                  <Input
+                    id="newSubjectCode"
+                    value={newSubjectCode}
+                    onChange={(e) => setNewSubjectCode(e.target.value)}
+                    placeholder="e.g. MATH101"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newSubjectCredits">Credits</Label>
+                  <Input
+                    id="newSubjectCredits"
+                    type="number"
+                    min="1"
+                    max="6"
+                    value={newSubjectCredits}
+                    onChange={(e) => setNewSubjectCredits(Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newSubjectScore">Score (%)</Label>
+                  <Input
+                    id="newSubjectScore"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={newSubjectScore}
+                    onChange={(e) => setNewSubjectScore(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleSaveNewSubject}>
+                  Add Subject
                 </Button>
               </DialogFooter>
             </DialogContent>

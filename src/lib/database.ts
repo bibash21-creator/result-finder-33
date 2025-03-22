@@ -1,4 +1,3 @@
-
 import { Student, Subject } from "./data";
 
 // Database key for storing all students
@@ -269,5 +268,42 @@ export const removeResultImage = (studentId: string): boolean => {
   
   // Update localStorage
   localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  return true;
+};
+
+// NEW FUNCTION: Add new subject to student
+export const addSubjectToStudent = (
+  studentId: string,
+  newSubject: {
+    name: string;
+    code: string;
+    credits: number;
+    score: number;
+  }
+): boolean => {
+  const students = getAllStudents();
+  const studentIndex = students.findIndex((s) => s.id === studentId);
+  
+  if (studentIndex === -1) return false;
+  
+  import("./data").then(({ calculateGrade }) => {
+    // Create the new subject with a unique ID
+    const subjectId = `SUB${students[studentIndex].subjects.length}`;
+    const subject: Subject = {
+      id: subjectId,
+      name: newSubject.name,
+      code: newSubject.code,
+      credits: newSubject.credits,
+      score: newSubject.score,
+      grade: calculateGrade(newSubject.score)
+    };
+    
+    // Add the subject to the student's subjects array
+    students[studentIndex].subjects.push(subject);
+    
+    // Update localStorage
+    localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+  });
+  
   return true;
 };
