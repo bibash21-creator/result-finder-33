@@ -9,8 +9,8 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const storedStudent = localStorage.getItem("currentStudent");
-    if (storedStudent) {
+    const storedStudentId = localStorage.getItem("currentStudentId");
+    if (storedStudentId) {
       navigate("/dashboard");
     }
   }, [navigate]);

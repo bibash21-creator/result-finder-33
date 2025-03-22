@@ -24,8 +24,8 @@ const LoginForm = () => {
       const student = getStudentByCredentials(studentId, password);
       
       if (student) {
-        // Store student in localStorage for persistence
-        localStorage.setItem("currentStudent", JSON.stringify(student));
+        // Store only the student ID in localStorage for persistence
+        localStorage.setItem("currentStudentId", student.id);
         toast.success("Login successful!");
         navigate("/dashboard");
       } else {

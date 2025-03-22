@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Student } from "@/lib/data";
+import { getStudentById } from "@/lib/database";
 
 const Navbar = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
@@ -13,14 +14,20 @@ const Navbar = () => {
 
   // Check if user is logged in
   useEffect(() => {
-    const storedStudent = localStorage.getItem("currentStudent");
-    if (storedStudent) {
-      setCurrentStudent(JSON.parse(storedStudent));
+    const storedStudentId = localStorage.getItem("currentStudentId");
+    if (storedStudentId) {
+      const student = getStudentById(storedStudentId);
+      if (student) {
+        setCurrentStudent(student);
+      } else {
+        // If student no longer exists in the database, clear localStorage
+        localStorage.removeItem("currentStudentId");
+      }
     }
   }, [location]);
 
   const handleLogout = () => {
-    localStorage.removeItem("currentStudent");
+    localStorage.removeItem("currentStudentId");
     setCurrentStudent(null);
     toast.success("Logged out successfully");
     navigate("/");
