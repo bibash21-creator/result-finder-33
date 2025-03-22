@@ -25,13 +25,13 @@ const Index = () => {
         <section className="max-w-4xl w-full text-center space-y-6 mt-12 animate-slide-up">
           <div className="space-y-2">
             <span className="inline-block text-sm font-medium text-primary px-3 py-1 rounded-full bg-primary/10 backdrop-blur-sm">
-              Student Results Portal
+             BIT Student Results Portal
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight md:px-8">
-              Access Your Academic Results with Ease
+              Access Your BIT Semesters Results with Ease
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mt-6">
-              A beautiful, simple way to view your academic performance. Log in or sign up to see your results.
+              A convinent way to view your academic performance. Log in or sign up to see your results.
             </p>
           </div>
           
@@ -76,7 +76,7 @@ const Index = () => {
       
       <footer className="border-t backdrop-blur-sm bg-background/40 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2023 ResultsHub. All rights reserved.</p>
+          <p>© 2025 ResultsHub. All rights reserved.</p>
         </div>
       </footer>
     </div>
