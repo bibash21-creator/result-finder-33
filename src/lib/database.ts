@@ -60,31 +60,13 @@ export const addNewStudent = (newStudent: {
     throw new Error("Student ID already exists");
   }
   
-  // Create student subjects immediately instead of using import
-  const studentSubjects: Subject[] = [];
-  
-  import("./data").then(({ subjects, generateRandomScore, calculateGrade }) => {
-    // Create subject data
-    subjects.forEach((subject: any, subIndex: number) => {
-      const score = generateRandomScore();
-      studentSubjects.push({
-        id: `SUB${subIndex}`,
-        name: subject.name,
-        code: subject.code,
-        credits: Math.floor(Math.random() * 2) + 2, // 2-3 credits
-        score,
-        grade: calculateGrade(score),
-      });
-    });
-  });
-  
-  // Create the new student object
+  // Create the new student with empty subjects array
   const student: Student = {
     id: newStudent.id,
     name: newStudent.name,
     password: newStudent.password,
     semester: "Fall 2023",
-    subjects: studentSubjects,
+    subjects: [], // Initialize with empty subjects array
     resultImage: null, // Initialize with no image
   };
   

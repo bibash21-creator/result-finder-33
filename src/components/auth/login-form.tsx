@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,15 +24,6 @@ const LoginForm = () => {
       const student = getStudentByCredentials(studentId, password);
       
       if (student) {
-        // Check if results are published
-        const resultsPublished = areResultsPublished();
-        
-        if (!resultsPublished) {
-          toast.error("Results are not published yet. Please check back later.");
-          setIsLoading(false);
-          return;
-        }
-        
         // Store student in localStorage for persistence
         localStorage.setItem("currentStudent", JSON.stringify(student));
         toast.success("Login successful!");

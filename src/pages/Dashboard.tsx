@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/navbar";
@@ -10,14 +9,12 @@ import { Student, Subject } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { areResultsPublished } from "@/lib/database";
 import GlassCard from "@/components/ui/glass-card";
 
 const Dashboard = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [resultsPublished, setResultsPublished] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,10 +24,6 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-
-    // Check if results are published
-    const published = areResultsPublished();
-    setResultsPublished(published);
 
     // Simulate loading data
     const timer = setTimeout(() => {
@@ -64,16 +57,17 @@ const Dashboard = () => {
     );
   }
 
-  if (!resultsPublished) {
+  // Check if student has no subjects yet
+  if (currentStudent && (!currentStudent.subjects || currentStudent.subjects.length === 0)) {
     return (
       <div className="min-h-screen gradient-background">
         <Navbar />
         
         <main className="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[80vh]">
           <GlassCard className="text-center max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Results Not Published Yet</h2>
+            <h2 className="text-2xl font-bold mb-4">No Results Available</h2>
             <p className="text-muted-foreground mb-6">
-              Your results have not been published yet. Please check back later.
+              Your results have not been added yet. Please check back later or contact administration.
             </p>
             <Button onClick={handleLogout}>Logout</Button>
           </GlassCard>
