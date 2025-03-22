@@ -12,6 +12,7 @@ import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import GlassCard from "@/components/ui/glass-card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getStudentById } from "@/lib/database";
 
 const Dashboard = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
@@ -20,21 +21,39 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    // Check if user is logged in
-    const storedStudent = localStorage.getItem("currentStudent");
-    if (!storedStudent) {
+  // Function to fetch the latest student data
+  const fetchLatestStudentData = () => {
+    const storedStudentId = localStorage.getItem("currentStudentId");
+    
+    if (!storedStudentId) {
       navigate("/login");
       return;
     }
-
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setCurrentStudent(JSON.parse(storedStudent));
+    
+    // Get the most current data from database
+    const studentData = getStudentById(storedStudentId);
+    
+    if (studentData) {
+      setCurrentStudent(studentData);
       setLoading(false);
-    }, 800);
+    } else {
+      // If student is not found in database, redirect to login
+      localStorage.removeItem("currentStudentId");
+      navigate("/login");
+    }
+  };
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    // Initial fetch
+    fetchLatestStudentData();
+    
+    // Set up interval to refresh data every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchLatestStudentData();
+    }, 5000);
+    
+    // Clean up the interval when component unmounts
+    return () => clearInterval(intervalId);
   }, [navigate]);
 
   // Filter subjects based on search term
@@ -44,7 +63,7 @@ const Dashboard = () => {
   );
 
   const handleLogout = () => {
-    localStorage.removeItem("currentStudent");
+    localStorage.removeItem("currentStudentId");
     toast.success("Logged out successfully");
     navigate("/");
   };
@@ -115,7 +134,11 @@ const Dashboard = () => {
               <TabsContent value="all" className="mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredSubjects?.map((subject) => (
-                    <ResultCard key={subject.id} subject={subject} />
+                    <ResultCard 
+                      key={subject.id} 
+                      subject={subject} 
+                      resultImage={currentStudent.resultImage}
+                    />
                   ))}
                   
                   {filteredSubjects?.length === 0 && (
@@ -138,7 +161,11 @@ const Dashboard = () => {
                   {filteredSubjects
                     ?.filter(subject => subject.grade !== "F")
                     .map((subject) => (
-                      <ResultCard key={subject.id} subject={subject} />
+                      <ResultCard 
+                        key={subject.id} 
+                        subject={subject} 
+                        resultImage={currentStudent.resultImage}
+                      />
                     ))}
                   
                   {filteredSubjects?.filter(subject => subject.grade !== "F").length === 0 && (
@@ -165,7 +192,11 @@ const Dashboard = () => {
                   {filteredSubjects
                     ?.filter(subject => subject.grade === "F")
                     .map((subject) => (
-                      <ResultCard key={subject.id} subject={subject} />
+                      <ResultCard 
+                        key={subject.id} 
+                        subject={subject}
+                        resultImage={currentStudent.resultImage}
+                      />
                     ))}
                   
                   {filteredSubjects?.filter(subject => subject.grade === "F").length === 0 && (
