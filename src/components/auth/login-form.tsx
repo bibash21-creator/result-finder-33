@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import GlassCard from "@/components/ui/glass-card";
 import { getStudentByCredentials } from "@/lib/database";
 import { ChevronRight } from "lucide-react";
-import { areResultsPublished } from "@/lib/database";
 
 const LoginForm = () => {
   const [studentId, setStudentId] = useState("");

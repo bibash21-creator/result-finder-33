@@ -1,3 +1,4 @@
+
 import { Student, Subject } from "./data";
 
 // Database key for storing all students
@@ -117,6 +118,7 @@ export const updateStudentCredentials = (
     name?: string;
     password?: string;
     id?: string;
+    semester?: string; // Added semester as an updatable field
   }
 ): boolean => {
   const students = getAllStudents();
@@ -131,6 +133,11 @@ export const updateStudentCredentials = (
   
   if (updatedData.password) {
     students[studentIndex].password = updatedData.password;
+  }
+  
+  // Update semester if provided
+  if (updatedData.semester) {
+    students[studentIndex].semester = updatedData.semester;
   }
   
   // If id is changing, ensure the new ID is unique

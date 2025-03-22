@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ const Admin = () => {
   const [editName, setEditName] = useState("");
   const [editId, setEditId] = useState("");
   const [editPassword, setEditPassword] = useState("");
+  const [editSemester, setEditSemester] = useState(""); // New state for semester
   
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null);
@@ -116,6 +118,7 @@ const Admin = () => {
     setEditName(student.name);
     setEditId(student.id);
     setEditPassword(student.password);
+    setEditSemester(student.semester); // Set the current semester value
   };
   
   const handleSaveEdit = () => {
@@ -124,7 +127,8 @@ const Admin = () => {
     const success = updateStudentCredentials(editingStudent.id, {
       name: editName !== editingStudent.name ? editName : undefined,
       id: editId !== editingStudent.id ? editId : undefined,
-      password: editPassword !== editingStudent.password ? editPassword : undefined
+      password: editPassword !== editingStudent.password ? editPassword : undefined,
+      semester: editSemester !== editingStudent.semester ? editSemester : undefined, // Add semester to update
     });
     
     if (success) {
@@ -306,236 +310,249 @@ const Admin = () => {
         </div>
         
         <GlassCard>
-          <Table>
-            <TableCaption>A list of all students and their results</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Password</TableHead>
-                <TableHead>Semester</TableHead>
-                <TableHead>Average Score</TableHead>
-                <TableHead>GPA</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => {
-                const avgScore = student.subjects.length > 0 
-                  ? student.subjects.reduce((sum, subj) => sum + subj.score, 0) / student.subjects.length
-                  : 0;
-                
-                const gradePoints: Record<string, number> = {
-                  "A": 4.0, "B": 3.0, "C": 2.0, "D": 1.0, "F": 0.0,
-                };
-                const totalCredits = student.subjects.reduce((sum, subj) => sum + subj.credits, 0);
-                const weightedSum = student.subjects.reduce(
-                  (sum, subj) => sum + gradePoints[subj.grade] * subj.credits, 0
-                );
-                const gpa = totalCredits > 0 ? (weightedSum / totalCredits).toFixed(2) : "0.00";
-                
-                return (
-                  <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.id}</TableCell>
-                    <TableCell>{student.name}</TableCell>
-                    <TableCell>
-                      <span className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
-                        {student.password}
-                      </span>
-                    </TableCell>
-                    <TableCell>{student.semester}</TableCell>
-                    <TableCell>{avgScore.toFixed(1)}%</TableCell>
-                    <TableCell>{gpa}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditStudent(student)}
-                            >
-                              Edit
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Edit Student Information</DialogTitle>
-                              <DialogDescription>
-                                Make changes to the student's credentials.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="editName">Student Name</Label>
-                                <Input
-                                  id="editName"
-                                  value={editName}
-                                  onChange={(e) => setEditName(e.target.value)}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="editId">Student ID</Label>
-                                <Input
-                                  id="editId"
-                                  value={editId}
-                                  onChange={(e) => setEditId(e.target.value)}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="editPassword">Password</Label>
-                                <Input
-                                  id="editPassword"
-                                  value={editPassword}
-                                  onChange={(e) => setEditPassword(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                            <DialogFooter>
-                              <Button type="submit" onClick={handleSaveEdit}>
-                                Save Changes
+          <div className="overflow-x-auto">
+            <Table>
+              <TableCaption>A list of all students and their results</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Password</TableHead>
+                  <TableHead>Semester</TableHead>
+                  <TableHead>Average Score</TableHead>
+                  <TableHead>GPA</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => {
+                  const avgScore = student.subjects.length > 0 
+                    ? student.subjects.reduce((sum, subj) => sum + subj.score, 0) / student.subjects.length
+                    : 0;
+                  
+                  const gradePoints: Record<string, number> = {
+                    "A": 4.0, "B": 3.0, "C": 2.0, "D": 1.0, "F": 0.0,
+                  };
+                  const totalCredits = student.subjects.reduce((sum, subj) => sum + subj.credits, 0);
+                  const weightedSum = student.subjects.reduce(
+                    (sum, subj) => sum + gradePoints[subj.grade] * subj.credits, 0
+                  );
+                  const gpa = totalCredits > 0 ? (weightedSum / totalCredits).toFixed(2) : "0.00";
+                  
+                  return (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">{student.id}</TableCell>
+                      <TableCell>{student.name}</TableCell>
+                      <TableCell>
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
+                          {student.password}
+                        </span>
+                      </TableCell>
+                      <TableCell>{student.semester}</TableCell>
+                      <TableCell>{avgScore.toFixed(1)}%</TableCell>
+                      <TableCell>{gpa}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2 flex-wrap">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditStudent(student)}
+                              >
+                                Edit
                               </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                            >
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action will permanently delete the student "{student.name}" with ID: {student.id}.
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleDeleteStudent(student.id)}
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit Student Information</DialogTitle>
+                                <DialogDescription>
+                                  Make changes to the student's credentials.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="editName">Student Name</Label>
+                                  <Input
+                                    id="editName"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="editId">Student ID</Label>
+                                  <Input
+                                    id="editId"
+                                    value={editId}
+                                    onChange={(e) => setEditId(e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="editPassword">Password</Label>
+                                  <Input
+                                    id="editPassword"
+                                    value={editPassword}
+                                    onChange={(e) => setEditPassword(e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="editSemester">Semester</Label>
+                                  <Input
+                                    id="editSemester"
+                                    value={editSemester}
+                                    onChange={(e) => setEditSemester(e.target.value)}
+                                    placeholder="e.g. Fall 2024"
+                                  />
+                                </div>
+                              </div>
+                              <DialogFooter>
+                                <Button type="submit" onClick={handleSaveEdit}>
+                                  Save Changes
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="sm"
                               >
                                 Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                        
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                            >
-                              Subjects
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl">
-                            <DialogHeader>
-                              <DialogTitle>Manage Subjects for {student.name}</DialogTitle>
-                              <DialogDescription>
-                                View and edit subject information for this student.
-                              </DialogDescription>
-                            </DialogHeader>
-                            
-                            <div className="py-4">
-                              <div className="flex justify-end mb-4">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleAddSubject(student)}
-                                  className="flex items-center gap-1"
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action will permanently delete the student "{student.name}" with ID: {student.id}.
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteStudent(student.id)}
                                 >
-                                  <Plus className="h-4 w-4" /> 
-                                  Add Subject
-                                </Button>
-                              </div>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                              >
+                                Subjects
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Manage Subjects for {student.name}</DialogTitle>
+                                <DialogDescription>
+                                  View and edit subject information for this student.
+                                </DialogDescription>
+                              </DialogHeader>
                               
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Subject Name</TableHead>
-                                    <TableHead>Code</TableHead>
-                                    <TableHead>Credits</TableHead>
-                                    <TableHead>Score</TableHead>
-                                    <TableHead>Grade</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {student.subjects.length > 0 ? (
-                                    student.subjects.map((subject) => (
-                                      <TableRow key={subject.id}>
-                                        <TableCell>{subject.name}</TableCell>
-                                        <TableCell>{subject.code}</TableCell>
-                                        <TableCell>{subject.credits}</TableCell>
-                                        <TableCell>{subject.score}%</TableCell>
-                                        <TableCell>{subject.grade}</TableCell>
-                                        <TableCell className="text-right">
-                                          <Button 
-                                            size="sm" 
-                                            variant="outline"
-                                            onClick={() => handleEditSubject(student, subject)}
-                                          >
-                                            <PenSquare className="h-4 w-4 mr-1" />
-                                            Edit
-                                          </Button>
-                                        </TableCell>
+                              <div className="py-4">
+                                <div className="flex justify-end mb-4">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleAddSubject(student)}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <Plus className="h-4 w-4" /> 
+                                    Add Subject
+                                  </Button>
+                                </div>
+                                
+                                <div className="overflow-x-auto">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Subject Name</TableHead>
+                                        <TableHead>Code</TableHead>
+                                        <TableHead>Credits</TableHead>
+                                        <TableHead>Score</TableHead>
+                                        <TableHead>Grade</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                       </TableRow>
-                                    ))
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
-                                        No subjects found. Add a subject to get started.
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
-                                </TableBody>
-                              </Table>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                        
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                            >
-                              <Image className="h-4 w-4 mr-1" />
-                              Result Image
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Manage Result Image</DialogTitle>
-                              <DialogDescription>
-                                Upload or update the result image for {student.name}
-                              </DialogDescription>
-                            </DialogHeader>
-                            
-                            <div className="py-4">
-                              <ImageUploader 
-                                studentId={student.id}
-                                currentImage={student.resultImage}
-                                onImageUpdate={loadData}
-                              />
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {student.subjects.length > 0 ? (
+                                        student.subjects.map((subject) => (
+                                          <TableRow key={subject.id}>
+                                            <TableCell>{subject.name}</TableCell>
+                                            <TableCell>{subject.code}</TableCell>
+                                            <TableCell>{subject.credits}</TableCell>
+                                            <TableCell>{subject.score}%</TableCell>
+                                            <TableCell>{subject.grade}</TableCell>
+                                            <TableCell className="text-right">
+                                              <Button 
+                                                size="sm" 
+                                                variant="outline"
+                                                onClick={() => handleEditSubject(student, subject)}
+                                              >
+                                                <PenSquare className="h-4 w-4 mr-1" />
+                                                Edit
+                                              </Button>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))
+                                      ) : (
+                                        <TableRow>
+                                          <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                                            No subjects found. Add a subject to get started.
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Image className="h-4 w-4 mr-1" />
+                                Result Image
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Manage Result Image</DialogTitle>
+                                <DialogDescription>
+                                  Upload or update the result image for {student.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              
+                              <div className="py-4">
+                                <ImageUploader 
+                                  studentId={student.id}
+                                  currentImage={student.resultImage}
+                                  onImageUpdate={loadData}
+                                />
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </GlassCard>
         
         {subjectToEdit && selectedStudent && (

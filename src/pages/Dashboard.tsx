@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/navbar";
@@ -10,12 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import GlassCard from "@/components/ui/glass-card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Dashboard = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Check if user is logged in
@@ -91,10 +94,10 @@ const Dashboard = () => {
             
             <Tabs defaultValue="all" className="w-full animate-scale-in">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <TabsList className="bg-secondary/80 backdrop-blur-sm">
-                  <TabsTrigger value="all">All Subjects</TabsTrigger>
-                  <TabsTrigger value="passed">Passed</TabsTrigger>
-                  <TabsTrigger value="failed">Failed</TabsTrigger>
+                <TabsList className="bg-secondary/80 backdrop-blur-sm w-full sm:w-auto">
+                  <TabsTrigger value="all" className="flex-1 sm:flex-initial">All Subjects</TabsTrigger>
+                  <TabsTrigger value="passed" className="flex-1 sm:flex-initial">Passed</TabsTrigger>
+                  <TabsTrigger value="failed" className="flex-1 sm:flex-initial">Failed</TabsTrigger>
                 </TabsList>
                 
                 <div className="relative w-full sm:w-auto">
@@ -187,6 +190,21 @@ const Dashboard = () => {
                 </div>
               </TabsContent>
             </Tabs>
+            
+            {currentStudent.resultImage && (
+              <div className="mt-8 animate-scale-in">
+                <GlassCard>
+                  <h3 className="text-xl font-semibold mb-4">Official Result Image</h3>
+                  <div className="flex justify-center">
+                    <img 
+                      src={currentStudent.resultImage} 
+                      alt="Official Result" 
+                      className="max-w-full rounded-md border border-border/30 shadow-lg"
+                    />
+                  </div>
+                </GlassCard>
+              </div>
+            )}
           </>
         )}
       </main>
